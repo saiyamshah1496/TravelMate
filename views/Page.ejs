@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<!--
+The following is the html page which is rendered to the user
+It contains input and destination locations
+On filling these request is done to the server from where we obtain the directions object
+We display this route and add markers at specific cities
+And we call the server to hit specific API's for the weather display of these distanceofpoints
+The weather is displayed as infowindows with the markers
+Also we can hit another server to get the weather for entire world
+TECHNOLOGIES: HTML, JavaScript, AJAX
+Created by: Saiyam Shah
+ -->
+<html>
+  <head>
+    <title>Travel-Mate</title>
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta charset="utf-8">
+    <style>
+
+    #map {
+       height: 100%;
+       width: 100%;
+     }
+#distance
+{
+  height: 100%;
+  width: 0%;
+  float:right;
+}
+
+#weatherDisplay
+{
+  height: 0%;
+  width: 25%;
+  float:right;
+}
+     /* Optional: Makes the sample page fill the window. */
+     html, body {
+       height: 100%;
+       margin: 0;
+       padding: 0;
+       background-color: #242f3e;
+     }
+     .controls {
+       margin-top: 10px;
+       border: 1px solid transparent;
+       border-radius: 2px 0 0 2px;
+       box-sizing: border-box;
+       -moz-box-sizing: border-box;
+       height: 40px;
+       outline: none;
+       display: inline;
+       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+     }
+     #distance {
+        font-family: 'Verdana','sans-serif';
+        line-height: 20px;
+        padding-left: 10px;
+        position: fixed;
+        overflow: auto;
+        top:0;
+        padding-left: 5px;
+        background-color:#dcdcdc;
+        color: white;
+        float: right;
+        right: 0;
+        border-color: black;
+        border: 1px solid black;
+        padding-left: 5px;
+        border-left: 5px;
+      }
+
+      #distance select, #distance input {
+        font-size: 10px;
+
+      }
+
+
+      #distance i {
+        font-size: 12px;
+        float: auto;
+
+      }
+
+      #weatherDisplay {
+         font-family: 'Verdana','sans-serif';
+         line-height: 20px;
+         padding-left: 10px;
+         position: fixed;
+         overflow: auto;
+         bottom:0;
+         padding-left: 5px;
+         background-color:black;
+         color: white;
+         float: right;
+         right: 0;
+         border-color: black;
+         border: 2px solid black;
+         padding-left: 5px;
+         border-left: 5px;
+       }
+
+       #distance select, #distance input {
+         font-size: 10px;
+
+       }
+
+
+       #distance i {
+         font-size: 12px;
+         float: auto;
+
+       }
+
+
+     #origin-input,
+     #destination-input {
+       background-color: #242f3e;
+       font-family: Roboto;
+       font-size: 15px;
+       font-weight: 300;
+       margin-left: 12px;
+       margin-bottom: 10px;
+       padding: 0 11px 0 13px;
+       text-overflow: ellipsis;
+       width: 200px;
+       color: white;
+     }
+
+     #origin-input:focus,
+     #destination-input:focus {
+       border-color: #242f3e;
+     }
+     button,a{
+       font-family: Verdana;
+       font-size: 12px;
+       color:white;
+
+     }
+     a
+     {
+       text-decoration: none;
+     }
+     #mode-selector {
+       color: white;
+       background-color: #242f3e;
+       margin-left: 12px;
+       padding: 5px 11px 10px 11px;
+       width:100px;
+       height:40px;
+     }
+
+     #weathermap {
+       color: white;
+       background-color: #242f3e;
+       margin-left: 12px;
+       padding: 5px 11px 10px 11px;
+       width:130px;
+       height:40px;
+       font-family: Verdana;
+       font-size: 13px;
+     }
+
+     #mode-selector label {
+       font-family: Verdana;
+       font-size: 13px;
+
+     }
+     table{
+       color:black !important;
+     }
+     .adp{
+       color: black !important;
+
+     }
+
+     .adp table,.adp-list
+     {
+       background-color: #dcdcdc !important;
+       font-family: Verdana !important;
+       font-size: 12px !important;
+       padding-left: 15px !important;
+
+     }
+     .adp-placemark
+     {
+       border:none !important;
+
+     }
+     ::-webkit-scrollbar {
+    display: none;
+}
+     .adp-summary
+     {
+       font-size: 15px !important;
+       font-style: bold !important;
+       text-align: center !important;
+       font-weight: bold !important;
+     }
+     p
+     {
+       padding-left: 15px;
+       color: black;
+     }
+     h5
+     {
+       text-align: center;
+       color:white;
+       background-color:#242f3e;
+       top:0;
+       padding-top: 1px;
+       margin: 0;
+       font-family: Verdana;
+     }
+
+     .gm-style {
+   border-radius: 2px;
+   background-color: rgb(255, 255, 255) !important;
+   top: 1px;
+   left: 1px;
+   }
+
+        /*style the p tag*/
+
+
+       /*style the link*/
+
+
+
+
+
+
+    </style>
+  </head>
+  <body>
+    <input id="origin-input" class="controls" type="text" placeholder="Origin">
+    <input id="destination-input" class="controls" type="text" placeholder="Destination">
+    <div id="mode-selector" class="controls">
+      <input type="radio" name="type" id="changemode-driving" checked="checked">
+      <label for="driving">Driving</label>
+    </div>
+    <button id="weathermap" class="controls"> <a href= "http://localhost:8001/weather">Weather</a></button>
+    <div id="weatherDisplay">
+      <h5>Weather</h5>
+<center><canvas id ="icon1" width="45px" height="30px"></canvas></center>
+<center><canvas id ="icon2" width="45px" height="30px"></canvas></center>
+<center><canvas id ="icon3" width="45px" height="30px"></canvas></center>
+<center><canvas id ="icon4" width="45px" height="30px"></canvas></center>
+<center><canvas id ="icon5" width="45px" height="30px"></canvas></center>
+<center><canvas id ="icon6" width="45px" height="30px"></canvas></center>
+<center><canvas id ="icon7" width="45px" height="30px"></canvas></center>
+<center><canvas id ="icon8" width="45px" height="30px"></canvas></center>
+<center><canvas id ="icon9" width="45px" height="30px"></canvas></center>
+<center><canvas id ="icon10" width="45px" height="30px"></canvas></center>
+<center><canvas id ="icon11" width="45px" height="30px"></canvas></center>
+<center><canvas id ="icon12" width="45px" height="30px"></canvas></center>
+<center><canvas id ="icon13" width="45px" height="30px"></canvas></center>
+<center><canvas id ="icon14" width="45px" height="30px"></canvas></center>
+<center><canvas id ="icon15" width="45px" height="30px"></canvas></center>
+<center><canvas id ="icon16" width="45px" height="30px"></canvas></center>
+<center><canvas id ="icon17" width="45px" height="30px"></canvas></center>
+    </div>
+    <div id="map"></div>
+    <script>
+    var map;
+    var latitudeOrigin;
+    var latitudeDestination,longitudeOrigin,longitudeDestination
+    var myLocation = { lat: 40.712, lng: -74.006};
+    //This function attaches two origin and destination input id's with the map and creates directions handlers
+
+    function initMap()
+    {
+
+
+      map=new google.maps.Map(document.getElementById('map'),
+    {
+      center: myLocation,
+      zoom:2,
+      mapTypeControlOptions: {
+              style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+              position: google.maps.ControlPosition.BOTTOM_CENTER,
+              mapTypeId: google.maps.MapTypeId.ROADMAP
+          },
+      styles: [
+            {elementType: 'geometry', stylers: [{color: '#242f3e'}]},
+            {elementType: 'labels.text.stroke', stylers: [{color: '#242f3e'}]},
+            {elementType: 'labels.text.fill', stylers: [{color: '#746855'}]},
+            {
+              featureType: 'administrative.locality',
+              elementType: 'labels.text.fill',
+              stylers: [{color: '#d59563'}]
+            },
+            {
+              featureType: 'poi',
+              elementType: 'labels.text.fill',
+              stylers: [{color: '#d59563'}]
+            },
+            {
+              featureType: 'poi.park',
+              elementType: 'geometry',
+              stylers: [{color: '#263c3f'}]
+            },
+            {
+              featureType: 'poi.park',
+              elementType: 'labels.text.fill',
+              stylers: [{color: '#6b9a76'}]
+            },
+            {
+              featureType: 'road',
+              elementType: 'geometry',
+              stylers: [{color: '#38414e'}]
+            },
+            {
+              featureType: 'road',
+              elementType: 'geometry.stroke',
+              stylers: [{color: '#212a37'}]
+            },
+            {
+              featureType: 'road',
+              elementType: 'labels.text.fill',
+              stylers: [{color: '#9ca5b3'}]
+            },
+            {
+              featureType: 'road.highway',
+              elementType: 'geometry',
+              stylers: [{color: '#746855'}]
+            },
+            {
+              featureType: 'road.highway',
+              elementType: 'geometry.stroke',
+              stylers: [{color: '#1f2835'}]
+            },
+            {
+              featureType: 'road.highway',
+              elementType: 'labels.text.fill',
+              stylers: [{color: '#f3d19c'}]
+            },
+            {
+              featureType: 'transit',
+              elementType: 'geometry',
+              stylers: [{color: '#2f3948'}]
+            },
+            {
+              featureType: 'transit.station',
+              elementType: 'labels.text.fill',
+              stylers: [{color: '#d59563'}]
+            },
+            {
+              featureType: 'water',
+              elementType: 'geometry',
+              stylers: [{color: '#17263c'}]
+            },
+            {
+              featureType: 'water',
+              elementType: 'labels.text.fill',
+              stylers: [{color: '#515c6d'}]
+            },
+            {
+              featureType: 'water',
+              elementType: 'labels.text.stroke',
+              stylers: [{color: '#17263c'}]
+            }
+          ]
+    });
+    new AutocompleteDirectionsHandler(map);
+
+  }
+  var markerArray = [];
+  var contentArray = [];
+  var infowindowArray = [];
+  var infowindowroute;
+  //Whenever a place is changes the following handler handles the change to render the new route and direction
+
+  function AutocompleteDirectionsHandler(map)
+  {
+
+    this.map=map;
+    this.originPlaceId=null;
+    this.destinationPlaceId=null;
+    this.travelMode='DRIVING';
+    var originInput = document.getElementById('origin-input');
+    var destinationInput = document.getElementById('destination-input');
+    var modeSelector = document.getElementById('mode-selector');
+    var weather = document.getElementById('weathermap');
+    var distanceDisplay=document.getElementById('distance');
+    this.directionsService = new google.maps.DirectionsService;
+    this.directionsDisplay = new google.maps.DirectionsRenderer;
+    var stepDisplay = new google.maps.InfoWindow;
+    for (var i = 0; i < markerArray.length; i++) {
+      markerArray[i].setMap(null);
+    }
+    this.directionsDisplay.setMap(map);
+    this.directionsDisplay.setPanel(document.getElementById('distance'));
+    var originAutocomplete = new google.maps.places.Autocomplete(originInput, {placeIdOnly: false});
+    var destinationAutocomplete = new google.maps.places.Autocomplete(destinationInput, {placeIdOnly: false});
+
+    this.setupPlaceChangedListener(originAutocomplete, 'ORIG');
+    this.setupPlaceChangedListener(destinationAutocomplete, 'DEST');
+    this.map.controls[google.maps.ControlPosition.TOP_LEFT].push(originInput);
+    this.map.controls[google.maps.ControlPosition.TOP_LEFT].push(destinationInput);
+    this.map.controls[google.maps.ControlPosition.TOP_LEFT].push(modeSelector);
+    this.map.controls[google.maps.ControlPosition.TOP_LEFT].push(weather);
+}
+
+AutocompleteDirectionsHandler.prototype.setupPlaceChangedListener = function(autocomplete, mode) {
+
+  if(markerArray.length!=0)
+  {
+    setMapOnAll(null);
+    markerArray=[];
+  }
+
+        var me = this;
+        autocomplete.bindTo('bounds', this.map);
+        autocomplete.addListener('place_changed', function() {
+          if(markerArray.length!=0)
+          {
+            for (var i = 0; i < markerArray.length; i++) {
+              markerArray[i].setMap(null);
+            }
+            infowindowroute.setMap(null);
+            markerArray=[];
+          }
+          var place = autocomplete.getPlace();
+          if (!place.place_id) {
+            window.alert("Please select an option from the dropdown list.");
+            return;
+          }
+          if (mode === 'ORIG') {
+            me.originPlaceId = place.place_id;
+          } else {
+            me.destinationPlaceId = place.place_id;
+          }
+          me.route();
+        });
+
+      };
+      // This function is where the route is drawn
+      // The object of directionsresult is received from the server and processed here to draw the polyline
+      AutocompleteDirectionsHandler.prototype.route = function() {
+        markerArray=[];
+        if (!this.originPlaceId || !this.destinationPlaceId) {
+          return;
+        }
+        var directionArray= new Array();
+        var json={"origin":this.originPlaceId, "destination":this.destinationPlaceId};
+        directionArray.push(json);
+        var dataToSend = JSON.stringify({"coordinates": directionArray});
+        var me = this;
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST",'/directions', true);
+        xhr.setRequestHeader('Content-type','application/json; charset=utf-8');
+        xhr.onreadystatechange = function() {//Call a function when the state changes.
+          if(this.readyState == XMLHttpRequest.DONE && this.status == 200) {
+              var json_data = JSON.parse(xhr.responseText);
+
+
+              var req =  {
+                origin: {'placeId': me.originPlaceId},
+                destination: {'placeId': me.destinationPlaceId},
+                travelMode: 'DRIVING'
+
+              };
+
+
+              var dirs= typecastRoutes(json_data.routes)
+
+              var directions = {
+                      routes : dirs,
+                      request : req
+                  }
+
+              me.directionsDisplay.setDirections(directions);
+                var center_point = json_data.routes[0].overview_path.length/2;
+              infowindowroute = new google.maps.InfoWindow();
+              infowindowroute.setContent("<h5>Your trip</h5>  <center>" + json_data.routes[0].legs[0].distance.text + "<br>" + " <center>" + json_data.routes[0].legs[0].duration.text + " ");
+              infowindowroute.setPosition(json_data.routes[0].overview_path[center_point|0]);
+              infowindowroute.open(me.map);
+              showSteps(directions);
+
+            //  document.getElementById("tmp").innerHTML = obj.weatherInformation[i].temperature+ " Farenheit";
+      }
+
+
+
+          }
+          xhr.send(dataToSend);
+      }
+
+
+
+
+
+
+      function typecastRoutes(routes){
+          routes.forEach(function(route){
+
+              route.bounds = asBounds(route.bounds);
+
+              // I don't think `overview_path` is used but it exists on the
+              // response of DirectionsService.route()
+              route.overview_path = asPath(route.overview_polyline);
+
+              route.legs.forEach(function(leg){
+
+                  leg.start_location = asLatLng(leg.start_location);
+                  leg.end_location   = asLatLng(leg.end_location);
+
+                  leg.steps.forEach(function(step){
+                      step.start_location = asLatLng(step.start_location);
+                      step.end_location   = asLatLng(step.end_location);
+                      step.path = asPath(step.polyline);
+                  });
+
+              });
+          });
+return routes;
+      }
+
+      function asBounds(boundsObject){
+
+          return new google.maps.LatLngBounds(new google.maps.LatLng(boundsObject.southwest),
+                                          new google.maps.LatLng(boundsObject.northeast));
+      }
+
+      function asLatLng(latLngObject){
+          return new google.maps.LatLng(latLngObject.lat, latLngObject.lng);
+      }
+
+      function asPath(encodedPolyObject){
+          return google.maps.geometry.encoding.decodePath( encodedPolyObject.points );
+      }
+
+      // This function is where the markers are put at specific locations and cities along the routes
+      // We also send the all the positions to the server to process the weather for each
+      //We put an infowindow at center to show the distance and time
+      function showSteps(directionResult) {
+  // For each step, place a marker, and add the text to the marker's
+  // info window. Also attach the marker to an array so we
+  // can keep track of it and remove it when calculating new
+  // routes.
+
+  markerArray=[];
+  var myArray=new Array();
+  var count=0;
+  var myRoute = directionResult.routes[0].legs[0];
+  var routeDistance = directionResult.routes[0].legs[0].distance.text.split(" ");
+
+  var  distanceValue= (( Math.ceil(parseInt(routeDistance[0].replace(/,/g, '')) * 10) / 10)*1.60934)/6;
+
+    var destLat = directionResult.routes[0].legs[0].end_location.lat();
+    var destLng = directionResult.routes[0].legs[0].end_location.lng();
+
+
+    var originLat = directionResult.routes[0].legs[0].start_location.lat();
+    var originLng = directionResult.routes[0].legs[0].start_location.lng();
+
+    var originItem =
+    {
+      "latitude": originLat,
+      "longitude" : originLng
+    };
+    myArray.push(originItem);
+
+  for (var i = 0; i < myRoute.steps.length; i++) {
+
+//      var distorigin = (getDistance(originLat,originLng,myRoute.steps[i].start_point.lat(),myRoute.steps[i].start_point.lng()))/1000;
+//      var distdestination = (getDistance(myRoute.steps[i].start_point.lat(),myRoute.steps[i].start_point.lng(),destLat,destLng))/1000;
+      if(i!=(myRoute.steps.length-1))
+      var distanceofpoints = (getDistance(myRoute.steps[i].start_location.lat(),myRoute.steps[i].start_location.lng(),myRoute.steps[i+1].start_location.lat(),myRoute.steps[i+1].start_location.lng()))/1000;
+
+      if(distanceofpoints > 70)
+      {
+          var myItem =
+          {
+            "latitude": myRoute.steps[i].start_location.lat(),
+            "longitude" : myRoute.steps[i].start_location.lng()
+          };
+          myArray.push(myItem);
+
+
+
+    }
+  }
+  var destItem =
+  {
+    "latitude": destLat,
+    "longitude" : destLng
+  };
+  myArray.push(destItem);
+  var json = JSON.stringify({"location": myArray});
+
+  var xhr = new XMLHttpRequest();
+  xhr.open("POST",'/', true);
+  xhr.setRequestHeader('Content-type','application/json; charset=utf-8');
+  xhr.onreadystatechange = function() {//Call a function when the state changes.
+    if(this.readyState == XMLHttpRequest.DONE && this.status == 200) {
+        var json_data = xhr.responseText;
+        var obj = JSON.parse(xhr.responseText);
+
+        for(var i=0;i<obj.weatherInformation.length;i++)
+        {
+          // Weather is displayed for each point and showed in the infowindow along with appropriate icons
+
+          var image = new Image();
+
+          var skycons = new Skycons({"color": "orange"});
+          var pos= {lat:obj.weatherInformation[i].latitude,lng: obj.weatherInformation[i].longitude};
+
+          if (obj.weatherInformation[i].icon=="clear-day") skycons.set("icon"+ (i+1), Skycons.CLEAR_DAY);
+          if (obj.weatherInformation[i].icon=="clear-night") skycons.set("icon" + (i+1), Skycons.CLEAR_NIGHT);
+          if (obj.weatherInformation[i].icon=="partly-cloudy-day") skycons.set("icon" + (i+1), Skycons.PARTLY_CLOUDY_DAY);
+          if (obj.weatherInformation[i].icon=="partly-cloudy-night") skycons.set("icon" + (i+1), Skycons.PARTLY_CLOUDY_NIGHT);
+          if (obj.weatherInformation[i].icon=="cloudy") skycons.set("icon" + (i+1), Skycons.CLOUDY);
+          if (obj.weatherInformation[i].icon=="rain") skycons.set("icon" + (i+1), Skycons.RAIN);
+          if (obj.weatherInformation[i].icon=="sleet") skycons.set("icon" + (i+1), Skycons.SLEET);
+          if (obj.weatherInformation[i].icon=="snow") skycons.set("icon" + (i+1), Skycons.SNOW);
+          if (obj.weatherInformation[i].icon=="wind") skycons.set("icon" + (i+1), Skycons.CLOUDY);
+          if (obj.weatherInformation[i].icon=="fog") skycons.set("icon" + (i+1), Skycons.FOG);
+            skycons.play();
+
+            image.src = document.getElementById("icon" + (i+1)).toDataURL("image/png");
+            contentArray[i]=  "<center><img src=" +image.src+ " /></center>" + "<p font-family=Verdana>" + obj.weatherInformation[i].temperature.toString() + "&deg;F"+ "<br />" +obj.weatherInformation[i].summary.toString() ;
+
+          var infowindow = new google.maps.InfoWindow({
+           content: contentArray[i]
+         });
+         infowindowArray[i]= infowindow;
+           var marker = new google.maps.Marker({
+           position: pos,
+           map: map,
+           title: 'Weather'
+         });
+           markerArray[i] = marker;
+           markerArray[i].infowindow = infowindow;
+           var marker = markerArray[i];
+
+           google.maps.event.addListener(marker, 'click', function () {
+        //    where I have added .html to the marker object.
+        //   infowindow.setContent(contentArray[i]);
+           this.infowindow.open(map, this);
+           });
+
+
+
+      //  document.getElementById("tmp").innerHTML = obj.weatherInformation[i].temperature+ " Farenheit";
+}
+
+
+
+    }
+}
+  xhr.send(json);
+
+}
+
+      function rad(x) {
+        return x * Math.PI / 180;
+      }
+
+      function getDistance(a1, b1 , a2, b2) {
+        var R = 6378137; // Earth’s mean radius in meter
+        var dLat = rad(a2 - a1);
+        var dLong = rad(b2 - b1);
+        var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos(rad(a1)) * Math.cos(rad(a2)) *
+          Math.sin(dLong / 2) * Math.sin(dLong / 2);
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        var d = R * c;
+        return d; // returns the distance in meter
+      }
+
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCjJ0UxhS2ZB0v3ejzyP7-gNWW3QINEQBk&libraries=places,geometry&callback=initMap"
+    async defer></script>
+<script src="https://gitcdn.link/cdn/darkskyapp/skycons/master/skycons.js"></script>
+
+
+  </body>
+  </html>

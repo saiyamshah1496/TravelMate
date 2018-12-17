@@ -1,0 +1,22 @@
+{
+  "name": "tripmate",
+  "version": "1.0.0",
+  "description": "To enlighten the user about the trip and give detailed knowledge",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "author": "saiyampr@buffalo.edu",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "ejs": "^2.6.1",
+    "express": "^4.16.3",
+    "jsonwebtoken": "^5.0.2",
+    "method-override": "~2.1.2",
+    "mongoose": "~4.1.0",
+    "morgan": "~1.2.2",
+    "skycons": "^1.0.0"
+  }
+}
